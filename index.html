@@ -1,114 +1,23 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroVocab AI - Học Từ Vựng Thông Minh</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroVocab AI - Học Từ Vựng Thông Minh</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel để biên dịch JSX của App.jsx trực tiếp trên trình duyệt -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Thư viện Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
-        <div class="text-center space-y-2">
-            <div class="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto text-2xl font-bold shadow-lg shadow-indigo-600/30">🧠</div>
-            <h1 class="text-2xl font-bold text-white">NeuroVocab AI</h1>
-            <p class="text-xs text-slate-400">Hệ thống học từ vựng nội bộ • Tài khoản: admin / 123</p>
-        </div>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="root"></div>
 
-        <div id="login-screen" class="space-y-4">
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1">Tài khoản</label>
-                <input type="text" id="user" value="admin" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1">Mật khẩu</label>
-                <input type="password" id="pass" placeholder="123" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
-            </div>
-            <p id="err" class="text-xs text-rose-400 hidden"></p>
-            <button id="login-btn" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/30 cursor-pointer">Đăng Nhập Ngay</button>
-        </div>
-
-        <div id="app-screen" class="hidden space-y-6">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-                <div>
-                    <h2 class="text-lg font-bold text-white">Xin chào, Admin!</h2>
-                    <p class="text-xs text-emerald-400">Đã đồng bộ tiến trình học tập</p>
-                </div>
-                <button id="logout-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 cursor-pointer">Đăng xuất</button>
-            </div>
-
-            <div class="space-y-3">
-                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-sm text-white">Bài 1: Giao Tiếp Công Sở</h3>
-                        <p class="text-xs text-slate-400">15 từ vựng • Đã học: 0/15</p>
-                    </div>
-                    <button id="start-btn" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs cursor-pointer">Vào Học</button>
-                </div>
-            </div>
-
-            <div id="study-area" class="hidden p-6 rounded-2xl bg-slate-950 border border-indigo-500/30 space-y-4 text-center">
-                <span class="text-xs text-indigo-400 font-bold uppercase tracking-wider">Level 1: Flashcard & Từ Vựng</span>
-                <div class="space-y-2">
-                    <h3 id="word-title" class="text-3xl font-extrabold text-white">negotiate</h3>
-                    <p id="word-ipa" class="text-slate-400 text-sm">/nɪˈɡəʊ.ʃi.eɪt/ (v)</p>
-                    <div id="word-meaning" class="text-xl font-bold text-emerald-300">đàm phán, thương lượng</div>
-                </div>
-                <button id="next-btn" class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs cursor-pointer">Từ Tiếp Theo</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const wordsList = [
-            { word: 'negotiate', ipa: '/nɪˈɡəʊ.ʃi.eɪt/', pos: 'v', meaning: 'đàm phán, thương lượng' },
-            { word: 'collaborate', ipa: '/kəˈlæb.ə.reɪt/', pos: 'v', meaning: 'hợp tác, cộng tác' },
-            { word: 'deadline', ipa: '/ˈded.laɪn/', pos: 'n', meaning: 'hạn chót, thời hạn' }
-        ];
-        let currentIndex = 0;
-
-        document.getElementById('login-btn').addEventListener('click', function() {
-            const u = document.getElementById('user').value.trim().toLowerCase();
-            const p = document.getElementById('pass').value.trim();
-            const e = document.getElementById('err');
-            if (u === 'admin' && p === '123') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                e.classList.add('hidden');
-            } else {
-                e.textContent = 'Sai tài khoản hoặc mật khẩu! (Dùng: admin / 123)';
-                e.classList.remove('hidden');
-            }
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', function() {
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('pass').value = '';
-            document.getElementById('study-area').classList.add('hidden');
-        });
-
-        document.getElementById('start-btn').addEventListener('click', function() {
-            document.getElementById('study-area').classList.remove('hidden');
-            currentIndex = 0;
-            updateWordCard();
-        });
-
-        function updateWordCard() {
-            const w = wordsList[currentIndex];
-            document.getElementById('word-title').textContent = w.word;
-            document.getElementById('word-ipa').textContent = `${w.ipa} (${w.pos})`;
-            document.getElementById('word-meaning').textContent = w.meaning;
-        }
-
-        document.getElementById('next-btn').addEventListener('click', function() {
-            currentIndex++;
-            if (currentIndex < wordsList.length) {
-                updateWordCard();
-            } else {
-                alert('Đã hoàn thành phiên học cơ bản!');
-                document.getElementById('study-area').classList.add('hidden');
-            }
-        });
-    </script>
+  <!-- Tải và tự động chuyển đổi file App.jsx trực tiếp -->
+  <script type="text/babel" data-presets="react" src="./App.jsx"></script>
 </body>
 </html>
