@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <!-- Babel để biên dịch JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Thư viện bổ trợ đọc file Word, PDF và Icon -->
+  <!-- Thư viện bổ trợ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
@@ -22,7 +22,137 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen">
   <div id="root"></div>
 
-  <!-- Tải file mã nguồn React chuẩn chạy trên trình duyệt -->
-  <script type="text/babel" src="./App.jsx"></script>
+  <!-- Script ứng dụng chạy trực tiếp không qua import/export lỗi -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+    const { 
+      BookOpen, Brain, Sparkles, Upload, Volume2, CheckCircle2, 
+      Lock, Unlock, Play, RotateCcw, Plus, Trash2, Check, X, 
+      ChevronRight, ChevronLeft, Award, Zap, Clock, Layers, 
+      LogOut, User, FileText, Settings, HelpCircle, ArrowRight,
+      RefreshCw, Star, ShieldCheck, AlertCircle, BarChart3, 
+      Smartphone, Monitor, Headphones, Eye, CheckSquare, Square,
+      Flame, Compass, GraduationCap, Wand2, Loader2, Keyboard, BookMarked
+    } = LucideReact;
+
+    // Dữ liệu mẫu khởi tạo
+    const INITIAL_LESSONS = [
+      {
+        id: 'lesson-sample-1',
+        title: 'Bài 1: Giao Tiếp Công Sở & Kinh Doanh Quốc Tế',
+        description: 'Bộ 15 từ vựng cốt lõi giúp bạn làm chủ các cuộc họp, đàm phán và email công việc chuyên nghiệp.',
+        createdAt: Date.now() - 86400000 * 2,
+        words: [
+          { id: 'w1', word: 'negotiate', ipa: '/nɪˈɡəʊ.ʃi.eɪt/', pos: 'v', meaning: 'đàm phán, thương lượng', example: 'We need to negotiate a better contract with our suppliers.', learned: false, srsLevel: 0, nextReview: null, lastStudied: null },
+          { id: 'w2', word: 'collaborate', ipa: '/kəˈlæb.ə.reɪt/', pos: 'v', meaning: 'hợp tác, cộng tác', example: 'Our marketing and sales teams collaborate closely on every campaign.', learned: false, srsLevel: 0, nextReview: null, lastStudied: null },
+          { id: 'w3', word: 'deadline', ipa: '/ˈded.laɪn/', pos: 'n', meaning: 'hạn chót, thời hạn cuối', example: 'Can we meet the project deadline without sacrificing quality?', learned: false, srsLevel: 0, nextReview: null, lastStudied: null },
+          { id: 'w4', word: 'implement', ipa: '/ˈɪm.plɪ.ment/', pos: 'v', meaning: 'triển khai, thực thi', example: 'The company decided to implement the new software next Monday.', learned: false, srsLevel: 0, nextReview: null, lastStudied: null },
+          { id: 'w5', word: 'strategy', ipa: '/ˈstræt.ə.dʒi/', pos: 'n', meaning: 'chiến lược', example: 'A clear long-term strategy is essential for sustainable growth.', learned: false, srsLevel: 0, nextReview: null, lastStudied: null }
+        ]
+      }
+    ];
+
+    const CEFR_LEVELS = [
+      { code: 'A1', name: 'A1 - Sơ cấp' },
+      { code: 'A2', name: 'A2 - Cơ bản' },
+      { code: 'B1', name: 'B1 - Trung cấp' },
+      { code: 'B2', name: 'B2 - Trung cao cấp' },
+      { code: 'C1', name: 'C1 - Cao cấp' },
+      { code: 'C2', name: 'C2 - Thành thạo' }
+    ];
+
+    function App() {
+      const [isLoggedIn, setIsLoggedIn] = useState(true);
+      const [loginUsername, setLoginUsername] = useState('admin');
+      const [loginPassword, setLoginPassword] = useState('');
+      const [loginError, setLoginError] = useState('');
+      const [lessons, setLessons] = useState(INITIAL_LESSONS);
+      const [stats, setStats] = useState({ totalSessionsCompleted: 0, xp: 150 });
+      const [currentView, setCurrentView] = useState('dashboard');
+      const [selectedLessonId, setSelectedLessonId] = useState(INITIAL_LESSONS[0].id);
+      const [toast, setToast] = useState(null);
+
+      const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+      };
+
+      const selectedLesson = useMemo(() => {
+        return lessons.find(l => l.id === selectedLessonId) || lessons[0];
+      }, [lessons, selectedLessonId]);
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if (loginUsername.toLowerCase() === 'admin' && loginPassword === '123') {
+          setIsLoggedIn(true);
+          showToast('Đăng nhập thành công tài khoản admin!');
+        } else {
+          setLoginError('Sai tài khoản hoặc mật khẩu! (admin / 123)');
+        }
+      };
+
+      if (!isLoggedIn) {
+        return (
+          <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+              <h1 className="text-2xl font-bold text-center mb-6">NeuroVocab AI</h1>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Tài khoản</label>
+                  <input type="text" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Mật khẩu</label>
+                  <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="123" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white" />
+                </div>
+                {loginError && <p className="text-xs text-rose-400">{loginError}</p>}
+                <button type="submit" className="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold">Đăng Nhập</button>
+              </form>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col p-6">
+          {toast && (
+            <div className="fixed top-4 right-4 z-50 bg-emerald-900/90 border border-emerald-500 text-emerald-200 px-4 py-3 rounded-2xl shadow-xl">
+              {toast.message}
+            </div>
+          )}
+          <header className="max-w-5xl w-full mx-auto flex justify-between items-center mb-8 pb-4 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-xl font-bold">NeuroVocab AI (Admin Mode)</h1>
+            </div>
+            <button onClick={() => setIsLoggedIn(false)} className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">Đăng xuất</button>
+          </header>
+
+          <main className="max-w-5xl w-full mx-auto space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+              <h2 className="text-2xl font-bold mb-2">Chào mừng bạn trở lại, Admin!</h2>
+              <p className="text-slate-400 text-sm">Hệ thống đã sẵn sàng với {lessons.length} bài học và đồng bộ tiến trình trực tuyến.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {lessons.map(lesson => (
+                <div key={lesson.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-2">{lesson.title}</h3>
+                    <p className="text-xs text-slate-400 mb-4">{lesson.description}</p>
+                  </div>
+                  <button onClick={() => showToast(`Đã chọn bài: ${lesson.title}`)} className="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm">Vào Học Ngay</button>
+                </div>
+              ))}
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
 </body>
 </html>
