@@ -2045,3 +2045,4 @@ Quy tắc:
     </div>
   );
 }
+window.App = App;
