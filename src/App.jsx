@@ -157,7 +157,7 @@ const CEFR_LEVELS = [
 ];
 
 async function callGeminiAPI(prompt, systemInstruction = '', jsonSchema = null, inlineData = null) {
-  const apiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || "";
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
   const parts = [{ text: prompt }];
@@ -557,7 +557,7 @@ Quy tắc:
         showToast('AI không tìm thấy từ vựng hợp lệ.', 'error');
       }
     } catch (error) {
-      showToast('Có lỗi kết nối AI. Vui lòng kiểm tra lại API Key!', 'error');
+      showToast('Có lỗi kết nối AI. Vui lòng thử lại!', 'error');
     } finally {
       setIsAiParsing(false);
     }
@@ -611,6 +611,7 @@ Quy tắc:
   const [selectedWordIdsForSession, setSelectedWordIdsForSession] = useState([]);
   const [sessionWords, setSessionWords] = useState([]);
   const [sessionStage, setSessionStage] = useState('level1-flashcards'); 
+  // 'level1-flashcards' | 'level1-quiz' | 'level2-spelling' | 'level3-translation' | 'session-complete'
 
   useEffect(() => {
     if (selectedLesson) {
@@ -627,12 +628,14 @@ Quy tắc:
   const [quizFeedback, setQuizFeedback] = useState(null);
   const [quizScore, setQuizScore] = useState(0);
 
+  // LEVEL 2: SPELLING TYPING STATES (VI -> EN & EN -> VI)
   const [spellingQuestions, setSpellingQuestions] = useState([]);
   const [currentSpellingIndex, setCurrentSpellingIndex] = useState(0);
   const [spellingInput, setSpellingInput] = useState('');
   const [spellingFeedback, setSpellingFeedback] = useState(null);
   const [spellingScore, setSpellingScore] = useState(0);
 
+  // LEVEL 3: CEFR TRANSLATION STATES
   const [cefrLevel, setCefrLevel] = useState('B1');
   const [level3Challenges, setLevel3Challenges] = useState([]);
   const [currentL3Index, setCurrentL3Index] = useState(0);
@@ -1699,6 +1702,7 @@ Quy tắc:
               </div>
             </div>
 
+            {/* LEVEL 1A: FLASHCARD */}
             {sessionStage === 'level1-flashcards' && sessionWords[flashcardIndex] && (() => {
               const currentWord = sessionWords[flashcardIndex];
               return (
@@ -1745,6 +1749,7 @@ Quy tắc:
               );
             })()}
 
+            {/* LEVEL 1B: TRẮC NGHIỆM */}
             {sessionStage === 'level1-quiz' && quizQuestions[currentQuizIndex] && (() => {
               const currentQ = quizQuestions[currentQuizIndex];
               return (
@@ -1796,6 +1801,7 @@ Quy tắc:
               );
             })()}
 
+            {/* LEVEL 2: GÕ CHÍNH TẢ 2 CHIỀU */}
             {sessionStage === 'level2-spelling' && spellingQuestions[currentSpellingIndex] && (() => {
               const currentSp = spellingQuestions[currentSpellingIndex];
               return (
@@ -1843,6 +1849,7 @@ Quy tắc:
               );
             })()}
 
+            {/* LEVEL 3: DỊCH CÂU AI CEFR */}
             {sessionStage === 'level3-translation' && (
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
                 <div className="p-4 rounded-2xl bg-slate-950 border border-indigo-500/30 flex flex-col sm:flex-row justify-between items-center gap-4">
