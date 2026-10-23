@@ -157,7 +157,7 @@ const CEFR_LEVELS = [
 ];
 
 async function callGeminiAPI(prompt, systemInstruction = '', jsonSchema = null, inlineData = null) {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+  const apiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || "";
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
   const parts = [{ text: prompt }];
@@ -557,7 +557,7 @@ Quy tắc:
         showToast('AI không tìm thấy từ vựng hợp lệ.', 'error');
       }
     } catch (error) {
-      showToast('Có lỗi kết nối AI. Vui lòng thử lại!', 'error');
+      showToast('Có lỗi kết nối AI. Vui lòng kiểm tra lại API Key!', 'error');
     } finally {
       setIsAiParsing(false);
     }
@@ -611,12 +611,11 @@ Quy tắc:
   const [selectedWordIdsForSession, setSelectedWordIdsForSession] = useState([]);
   const [sessionWords, setSessionWords] = useState([]);
   const [sessionStage, setSessionStage] = useState('level1-flashcards'); 
-  // 'level1-flashcards' | 'level1-quiz' | 'level2-spelling' | 'level3-translation' | 'session-complete'
 
   useEffect(() => {
     if (selectedLesson) {
       const unlearned = selectedLesson.words.filter(w => !w.learned);
-      const initialPick = unlearned.slice(0, batchSize).map(w => w.id);
+      const initialPick = unlearned.length > 0 ? unlearned.slice(0, batchSize).map(w => w.id) : selectedLesson.words.slice(0, batchSize).map(w => w.id);
       setSelectedWordIdsForSession(initialPick);
     }
   }, [selectedLessonId, batchSize, lessons]);
@@ -628,14 +627,12 @@ Quy tắc:
   const [quizFeedback, setQuizFeedback] = useState(null);
   const [quizScore, setQuizScore] = useState(0);
 
-  // LEVEL 2: SPELLING TYPING STATES (VI -> EN & EN -> VI)
   const [spellingQuestions, setSpellingQuestions] = useState([]);
   const [currentSpellingIndex, setCurrentSpellingIndex] = useState(0);
   const [spellingInput, setSpellingInput] = useState('');
   const [spellingFeedback, setSpellingFeedback] = useState(null);
   const [spellingScore, setSpellingScore] = useState(0);
 
-  // LEVEL 3: CEFR TRANSLATION STATES
   const [cefrLevel, setCefrLevel] = useState('B1');
   const [level3Challenges, setLevel3Challenges] = useState([]);
   const [currentL3Index, setCurrentL3Index] = useState(0);
@@ -1609,7 +1606,7 @@ Quy tắc:
                           key={count}
                           onClick={() => {
                             setBatchSize(count);
-                            setSelectedWordIdsForSession(unlearnedPool.slice(0, count).map(w => w.id));
+                            setSelectedWordIdsForSession(unlearnedPool.length > 0 ? unlearnedPool.slice(0, count).map(w => w.id) : selectedLesson.words.slice(0, count).map(w => w.id));
                           }}
                           className={`p-4 rounded-2xl border text-left transition cursor-pointer ${
                             isActive ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'
@@ -1675,7 +1672,7 @@ Quy tắc:
                           <Sparkles className="w-4 h-4" />
                           <span>Vào Tinh Túy Bài Học</span>
                         </button>
-                     ) : (
+                      ) : (
                         <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-center text-xs text-slate-400">
                           Hoàn thành 100% từ vựng để mở khóa!
                         </div>
@@ -1807,7 +1804,6 @@ Quy tắc:
               </div>
             </div>
 
-            {/* LEVEL 1A: FLASHCARD */}
             {sessionStage === 'level1-flashcards' && sessionWords[flashcardIndex] && (() => {
               const currentWord = sessionWords[flashcardIndex];
               return (
@@ -1854,7 +1850,6 @@ Quy tắc:
               );
             })()}
 
-            {/* LEVEL 1B: TRẮC NGHIỆM */}
             {sessionStage === 'level1-quiz' && quizQuestions[currentQuizIndex] && (() => {
               const currentQ = quizQuestions[currentQuizIndex];
               return (
@@ -1906,7 +1901,6 @@ Quy tắc:
               );
             })()}
 
-            {/* LEVEL 2: GÕ CHÍNH TẢ 2 CHIỀU */}
             {sessionStage === 'level2-spelling' && spellingQuestions[currentSpellingIndex] && (() => {
               const currentSp = spellingQuestions[currentSpellingIndex];
               return (
@@ -1954,7 +1948,6 @@ Quy tắc:
               );
             })()}
 
-            {/* LEVEL 3: DỊCH CÂU AI CEFR */}
             {sessionStage === 'level3-translation' && (
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
                 <div className="p-4 rounded-2xl bg-slate-950 border border-indigo-500/30 flex flex-col sm:flex-row justify-between items-center gap-4">
