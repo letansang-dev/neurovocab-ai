@@ -1675,7 +1675,7 @@ Quy tắc:
                           <Sparkles className="w-4 h-4" />
                           <span>Vào Tinh Túy Bài Học</span>
                         </button>
-                      ) : (
+                     ) : (
                         <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-center text-xs text-slate-400">
                           Hoàn thành 100% từ vựng để mở khóa!
                         </div>
@@ -1684,6 +1684,111 @@ Quy tắc:
                   </div>
                 );
               })()}
+            </div>
+
+            {/* BẢNG DANH SÁCH & CHỌN TỪNG TỪ VỰNG TRONG BÀI */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <BookMarked className="w-5 h-5 text-indigo-400" />
+                    <span>Danh Sách Từ Vựng Trong Bài ({selectedLesson.words.length} từ)</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Bấm vào từng từ để chọn hoặc bỏ chọn cho phiên học hiện tại (Đã chọn: <strong className="text-indigo-400">{selectedWordIdsForSession.length}</strong> từ)
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const unlearnedIds = selectedLesson.words.filter(w => !w.learned).map(w => w.id);
+                      setSelectedWordIdsForSession(unlearnedIds.length > 0 ? unlearnedIds : selectedLesson.words.map(w => w.id));
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-indigo-300 cursor-pointer transition"
+                  >
+                    Chọn từ chưa thuộc
+                  </button>
+                  <button
+                    onClick={() => setSelectedWordIdsForSession(selectedLesson.words.map(w => w.id))}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 cursor-pointer transition"
+                  >
+                    Chọn tất cả
+                  </button>
+                  <button
+                    onClick={() => setSelectedWordIdsForSession([])}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-rose-300 cursor-pointer transition"
+                  >
+                    Bỏ chọn hết
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {selectedLesson.words.map((w) => {
+                  const isSelected = selectedWordIdsForSession.includes(w.id);
+                  const toggleSelectWord = () => {
+                    setSelectedWordIdsForSession(prev =>
+                      prev.includes(w.id) ? prev.filter(id => id !== w.id) : [...prev, w.id]
+                    );
+                  };
+
+                  return (
+                    <div
+                      key={w.id}
+                      onClick={toggleSelectWord}
+                      className={`p-4 rounded-2xl border transition cursor-pointer flex flex-col justify-between gap-2 ${
+                        isSelected
+                          ? 'bg-indigo-950/30 border-indigo-500/70 shadow-md shadow-indigo-500/10'
+                          : 'bg-slate-950 border-slate-800/80 hover:border-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            {isSelected ? (
+                              <CheckSquare className="w-5 h-5 text-indigo-400 shrink-0" />
+                            ) : (
+                              <Square className="w-5 h-5 text-slate-600 shrink-0" />
+                            )}
+                            <div>
+                              <span className="font-bold text-white text-base">{w.word}</span>
+                              <span className="text-xs text-slate-400 ml-2 font-mono">{w.ipa} ({w.pos})</span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              speakEnglish(w.word, `list_${w.id}`);
+                            }}
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-indigo-600 text-slate-400 hover:text-white transition cursor-pointer"
+                            title="Nghe phát âm"
+                          >
+                            <Volume2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <p className="text-sm font-semibold text-emerald-300 mt-2 pl-7">{w.meaning}</p>
+                        {w.example && (
+                          <p className="text-xs text-slate-400 italic mt-1 pl-7 line-clamp-2">"{w.example}"</p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-800/60 pl-7">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          w.learned
+                            ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                            : 'bg-slate-800 text-slate-400'
+                        }`}>
+                          {w.learned ? `✓ Đã thuộc (SRS Lv.${w.srsLevel || 1})` : 'Chưa học'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
